@@ -18,8 +18,9 @@ repositories {
 }
 
 dependencies {
-    implementation("org.springframework.boot:spring-boot-starter-web:3.4.1")
-    implementation("org.springframework.boot:spring-boot-starter-jdbc:3.4.1")
+    implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation("org.springframework.boot:spring-boot-starter-jdbc")
+    implementation("org.springframework.kafka:spring-kafka")
     implementation("org.flywaydb:flyway-database-postgresql:10.18.2")
 
     implementation(project(":common"))
