@@ -27,6 +27,8 @@ dependencies {
 
     testImplementation(platform("org.junit:junit-bom:5.10.3"))
     testImplementation("org.junit.jupiter:junit-jupiter")
+
+    testImplementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.4")
 }
 
 tasks.test {

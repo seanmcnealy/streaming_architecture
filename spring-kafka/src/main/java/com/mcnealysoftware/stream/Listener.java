@@ -18,7 +18,7 @@ public class Listener {
     }
 
     @KafkaListener(id = "event-importer", topics = {"events"})
-    public void processEvent(Event event) throws SQLException {
+    public void accept(Event event) throws SQLException {
         logger.info("Processed event type {} message {}", event.type(), event.message());
 
         // this is a great place to insert into a database if the web api
