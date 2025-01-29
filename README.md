@@ -3,6 +3,8 @@
 A simple starter application that illustrates different ways to design an application
 that does computations on events.
 
+Depends on a Postgres database and a Kafka broker, which can be run locally.
+
 ### [common](common/README.md)
 
 Simple model objects and database access.

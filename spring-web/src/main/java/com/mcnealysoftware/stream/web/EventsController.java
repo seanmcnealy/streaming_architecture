@@ -4,6 +4,8 @@ import dao.EventDao;
 import model.Event;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,9 +18,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.sql.SQLException;
+import java.util.concurrent.ExecutionException;
 
 @RestController
 public class EventsController {
+    Logger logger = LoggerFactory.getLogger(EventsController.class);
 
     EventDao eventDao;
     Producer<String, Event> kafkaProducer;
@@ -54,14 +58,15 @@ public class EventsController {
     }
 
     @PostMapping("/")
-    public ResponseEntity<String> insert(@RequestBody Event event) {
+    public ResponseEntity<String> insert(@RequestBody Event event) throws ExecutionException, InterruptedException {
         if(event.type() == null || event.type().isBlank())
             return ResponseEntity.badRequest().body("type must be valid");
         try {
             final var id = eventDao.insert(event);
             if(id == null)
                 return ResponseEntity.badRequest().build();
-            kafkaProducer.send(new ProducerRecord<>("events", event.type(), event));
+            var kafkaResult = kafkaProducer.send(new ProducerRecord<>("events", event.type(), event)).get();
+            logger.info("Saved postgres id {}, kafka partition {} offset {}", id, kafkaResult.partition(), kafkaResult.offset());
             return ResponseEntity.status(HttpStatus.CREATED).body("/%d".formatted(id));
         } catch (SQLException e) {
             return ResponseEntity.internalServerError().build();
