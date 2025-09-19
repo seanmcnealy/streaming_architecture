@@ -8,7 +8,7 @@ version = "1.0-SNAPSHOT"
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(21)
+        languageVersion = JavaLanguageVersion.of(25)
     }
 }
 
@@ -17,15 +17,15 @@ repositories {
 }
 
 dependencies {
-    implementation("org.postgresql:postgresql:42.7.3")
+    implementation("org.postgresql:postgresql:42.7.7")
 
-    testImplementation(platform("org.junit:junit-bom:5.10.3"))
+    testImplementation(platform("org.junit:junit-bom:5.13.4"))
     testImplementation("org.junit.jupiter:junit-jupiter")
 
-    testImplementation("org.testcontainers:testcontainers:1.20.1")
-    testImplementation("org.testcontainers:postgresql:1.20.1")
-    testImplementation("com.zaxxer:HikariCP:5.1.0")
-    testImplementation("org.flywaydb:flyway-database-postgresql:10.18.2")
+    testImplementation("org.testcontainers:testcontainers:1.21.3")
+    testImplementation("org.testcontainers:postgresql:1.21.3")
+    testImplementation("com.zaxxer:HikariCP:7.0.2")
+    testImplementation("org.flywaydb:flyway-database-postgresql:11.13.1")
 }
 
 tasks.test {
