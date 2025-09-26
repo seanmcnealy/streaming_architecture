@@ -1,6 +1,6 @@
 ## streaming-architecture spring-web
 
-Generates schema on startup 
+Generates schema on startup
 
 Collects events POSTed over HTTP
 

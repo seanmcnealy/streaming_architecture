@@ -8,7 +8,7 @@ public record Event(
     String message,
     Timestamp timestamp
 ) {
-    public Event(String type, String message){
+    public Event(String type, String message) {
         this(null, type, message, null);
     }
 

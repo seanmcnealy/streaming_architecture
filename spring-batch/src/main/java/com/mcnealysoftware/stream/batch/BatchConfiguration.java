@@ -31,12 +31,12 @@ public class BatchConfiguration {
 
     @Bean
     public JdbcCursorItemReader<Event> reader(DataSource dataSource) {
-        final var reader = new JdbcCursorItemReader<Event>(){
+        final var reader = new JdbcCursorItemReader<Event>() {
             public Long currentIndex = null;
 
             @Override
             public void open(ExecutionContext executionContext) throws ItemStreamException {
-                if(executionContext.containsKey("CURRENT_INDEX")){
+                if (executionContext.containsKey("CURRENT_INDEX")) {
                     logger.debug("got offset from context");
                     currentIndex = executionContext.getLong("CURRENT_INDEX");
                 } else {
@@ -58,6 +58,7 @@ public class BatchConfiguration {
                 logger.debug("starting from offset {}", currentIndex);
                 super.open(executionContext);
             }
+
             @Override
             public void update(ExecutionContext executionContext) throws ItemStreamException {
                 executionContext.putLong("CURRENT_INDEX", currentIndex);
@@ -70,10 +71,10 @@ public class BatchConfiguration {
         reader.setRowMapper((resultSet, rowNumber) -> {
             reader.currentIndex = resultSet.getLong("id");
             return new Event(
-                resultSet.getInt("id"),
-                resultSet.getString("type"),
-                resultSet.getString("message"),
-                resultSet.getTimestamp("timestamp"));
+                    resultSet.getInt("id"),
+                    resultSet.getString("type"),
+                    resultSet.getString("message"),
+                    resultSet.getTimestamp("timestamp"));
         });
         return reader;
     }
@@ -92,7 +93,7 @@ public class BatchConfiguration {
     }
 
     @Bean
-    public JdbcBatchItemWriter<Event> writer(DataSource dataSource){
+    public JdbcBatchItemWriter<Event> writer(DataSource dataSource) {
         final var writer = new JdbcBatchItemWriter<Event>();
         writer.setDataSource(dataSource);
         writer.setSql("UPDATE event SET processed = true WHERE id = ?;");
@@ -106,16 +107,16 @@ public class BatchConfiguration {
     @Bean
     public ExecutionContextPromotionListener promotionListener() {
         final ExecutionContextPromotionListener listener = new ExecutionContextPromotionListener();
-        listener.setKeys(new String[] {"CURRENT_INDEX" });
+        listener.setKeys(new String[]{"CURRENT_INDEX"});
         return listener;
     }
 
     @Bean
-    public JobExecutionListener completionListener(DataSource datasource){
-        return new JobExecutionListener(){
+    public JobExecutionListener completionListener(DataSource datasource) {
+        return new JobExecutionListener() {
             @Override
             public void afterJob(@NonNull JobExecution jobExecution) {
-                if(jobExecution.getExecutionContext().containsKey("CURRENT_INDEX")) {
+                if (jobExecution.getExecutionContext().containsKey("CURRENT_INDEX")) {
                     long offset = jobExecution.getExecutionContext().getLong("CURRENT_INDEX");
                     logger.debug("saving offset to database {}", offset);
                     try (final var statement = datasource.getConnection().prepareStatement("INSERT INTO batch_processed (\"type\", \"offset\") VALUES (?, ?) ON CONFLICT (\"type\") DO UPDATE SET \"offset\" = EXCLUDED.offset")) {
@@ -134,21 +135,21 @@ public class BatchConfiguration {
     @Bean
     public Job importUserJob(Step step1, JobRepository jobRepository, JobExecutionListener listener) {
         return new JobBuilder("importEventJob", jobRepository)
-            .listener(listener)
-            .start(step1)
-            .build();
+                .listener(listener)
+                .start(step1)
+                .build();
     }
 
     @Bean
     public Step step1(JobRepository jobRepository, DataSourceTransactionManager transactionManager,
                       JdbcCursorItemReader<Event> reader, ItemProcessor<Event, Event> processor, JdbcBatchItemWriter<Event> writer) {
         return new StepBuilder("step1", jobRepository)
-            .<Event, Event> chunk(3, transactionManager)
-            .reader(reader)
-            .listener(promotionListener())
-            .processor(processor)
-            .writer(writer)
-            .allowStartIfComplete(true)
-            .build();
+                .<Event, Event>chunk(3, transactionManager)
+                .reader(reader)
+                .listener(promotionListener())
+                .processor(processor)
+                .writer(writer)
+                .allowStartIfComplete(true)
+                .build();
     }
 }

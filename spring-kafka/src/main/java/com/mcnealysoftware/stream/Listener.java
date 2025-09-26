@@ -13,7 +13,7 @@ public class Listener {
 
     EventDao eventDao;
 
-    Listener(EventDao eventDao){
+    Listener(EventDao eventDao) {
         this.eventDao = eventDao;
     }
 

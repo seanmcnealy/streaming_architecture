@@ -10,31 +10,25 @@ import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.support.serializer.JsonSerializer;
 
 import javax.sql.DataSource;
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
 @org.springframework.context.annotation.Configuration
 public class Configuration {
 
-    @Bean Connection connection(DataSource dataSource) throws SQLException {
-        return dataSource.getConnection();
+    @Bean
+    EventDao eventDao(DataSource dataSource) {
+        return new EventDao(dataSource);
     }
 
     @Bean
-    EventDao eventDao(Connection connection) {
-        return new EventDao(connection);
-    }
-
-    @Bean
-    Producer<String, Event> eventClient(){
+    Producer<String, Event> eventClient() {
         Map<String, Object> configProps = new HashMap<>();
         configProps.put(
-            ProducerConfig.BOOTSTRAP_SERVERS_CONFIG,
-            "localhost:9092");
+                ProducerConfig.BOOTSTRAP_SERVERS_CONFIG,
+                "localhost:9092");
         return new DefaultKafkaProducerFactory<String, Event>(configProps,
-            new StringSerializer(),
-            new JsonSerializer<>()).createProducer();
+                new StringSerializer(),
+                new JsonSerializer<>()).createProducer();
     }
 }

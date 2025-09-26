@@ -11,8 +11,6 @@ import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
 
 import javax.sql.DataSource;
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -20,13 +18,9 @@ import java.util.Map;
 @EnableKafka
 public class Configuration {
 
-    @Bean Connection connection(DataSource dataSource) throws SQLException {
-        return dataSource.getConnection();
-    }
-
     @Bean
-    EventDao eventDao(Connection connection) {
-        return new EventDao(connection);
+    EventDao eventDao(DataSource dataSource) {
+        return new EventDao(dataSource);
     }
 
     @Bean
@@ -34,14 +28,14 @@ public class Configuration {
     kafkaListenerContainerFactory() {
         Map<String, Object> configProps = new HashMap<>();
         configProps.put(
-            ProducerConfig.BOOTSTRAP_SERVERS_CONFIG,
-            "localhost:9092");
+                ProducerConfig.BOOTSTRAP_SERVERS_CONFIG,
+                "localhost:9092");
         final var consumerFactory = new DefaultKafkaConsumerFactory<String, Event>(configProps,
-            new StringDeserializer(),
-            new JsonDeserializer<>(Event.class, false));
+                new StringDeserializer(),
+                new JsonDeserializer<>(Event.class, false));
 
         ConcurrentKafkaListenerContainerFactory<String, Event> factory =
-            new ConcurrentKafkaListenerContainerFactory<>();
+                new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory);
         return factory;
     }

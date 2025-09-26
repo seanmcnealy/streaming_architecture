@@ -11,16 +11,11 @@ import org.testcontainers.containers.PostgreSQLContainer;
 
 import org.junit.jupiter.api.Test;
 
-import java.sql.Connection;
+import javax.sql.DataSource;
 import java.sql.SQLException;
 
 public class EventDaoTest {
-    @FunctionalInterface
-    public interface CheckedConsumer<T> {
-        void accept(T t) throws SQLException;
-    }
-
-    private void setup(CheckedConsumer<Connection> f) throws SQLException {
+    private void setup(CheckedConsumer<DataSource> f) throws SQLException {
         try (final var postgres = new PostgreSQLContainer<>(DockerImageName.parse("postgres:16-alpine"))) {
             postgres.start();
             final var config = new HikariConfig();
@@ -30,11 +25,11 @@ public class EventDaoTest {
             config.setDriverClassName(postgres.getDriverClassName());
             try (var datasource = new HikariDataSource(config)) {
                 final var flyway = Flyway.configure()
-                    .dataSource(datasource)
-                    .locations("classpath:schema")
-                    .load();
+                        .dataSource(datasource)
+                        .locations("classpath:schema")
+                        .load();
                 flyway.migrate();
-                f.accept(datasource.getConnection());
+                f.accept(datasource);
             }
         }
     }
@@ -90,5 +85,10 @@ public class EventDaoTest {
             final var retrieved = dao.getLatest();
             assertEquals("test3", retrieved.type());
         });
+    }
+
+    @FunctionalInterface
+    public interface CheckedConsumer<T> {
+        void accept(T t) throws SQLException;
     }
 }
