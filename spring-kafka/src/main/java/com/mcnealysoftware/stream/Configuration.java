@@ -2,7 +2,8 @@ package com.mcnealysoftware.stream;
 
 import dao.EventDao;
 import model.Event;
-import org.apache.kafka.clients.producer.ProducerConfig;
+import org.apache.kafka.clients.CommonClientConfigs;
+import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.kafka.annotation.EnableKafka;
@@ -24,12 +25,10 @@ public class Configuration {
     }
 
     @Bean
-    ConcurrentKafkaListenerContainerFactory<String, Event>
-    kafkaListenerContainerFactory() {
+    ConcurrentKafkaListenerContainerFactory<String, Event> kafkaListenerContainerFactory() {
         Map<String, Object> configProps = new HashMap<>();
-        configProps.put(
-                ProducerConfig.BOOTSTRAP_SERVERS_CONFIG,
-                "localhost:9092");
+        configProps.put(CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
+        configProps.put(ConsumerConfig.GROUP_ID_CONFIG, "event-stream-application");
         final var consumerFactory = new DefaultKafkaConsumerFactory<String, Event>(configProps,
                 new StringDeserializer(),
                 new JsonDeserializer<>(Event.class, false));
